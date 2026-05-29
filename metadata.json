@@ -1,0 +1,6 @@
+{
+  "name": "Birthday Reminder",
+  "description": "An elegant, high-contrast birthday tracker and countdown diary featuring milestone alerts, custom message templates, and gift tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
