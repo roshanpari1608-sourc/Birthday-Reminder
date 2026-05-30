@@ -5,11 +5,9 @@ import {
   ShieldCheck, 
   Mail, 
   Lock, 
-  Sparkles, 
   ArrowRight, 
   Play, 
   UserPlus, 
-  Key, 
   AlertCircle,
   Eye,
   EyeOff
@@ -25,8 +23,8 @@ interface LoginScreenProps {
 export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }: LoginScreenProps) {
   const [activeTab, setActiveTab] = useState<'signin' | 'register'>('signin');
   
-  // Sign In inputs
-  const [signInEmail, setSignInEmail] = useState(userProfile.email || 'roshanpari1608@gmail.com');
+  // Sign In inputs - Changed default to empty string so it doesn't auto-fill your email
+  const [signInEmail, setSignInEmail] = useState(userProfile.email || '');
   const [signInPasscode, setSignInPasscode] = useState('');
   const [showPasscode, setShowPasscode] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
@@ -44,24 +42,19 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
     e.preventDefault();
     setSignInError(null);
 
-    // Validate inputs
     const normalizedEmail = signInEmail.toLowerCase().trim();
-    const storedEmail = userProfile.email.toLowerCase().trim();
-    
-    // Default passcode is '1608'. If user has custom passcode, check that too.
+    const storedEmail = userProfile.email ? userProfile.email.toLowerCase().trim() : '';
     const expectedPasscode = (userProfile as any).passcode || '1608';
 
-    if (normalizedEmail === storedEmail && signInPasscode === expectedPasscode) {
-      // Success
+    if (storedEmail && normalizedEmail === storedEmail && signInPasscode === expectedPasscode) {
       onLoginSuccess(userProfile);
     } else if (normalizedEmail === 'roshanpari1608@gmail.com' && signInPasscode === '1608') {
-      // Fallback fallback standard admin entry
       onLoginSuccess({
         ...userProfile,
         email: 'roshanpari1608@gmail.com'
       });
     } else {
-      setSignInError('Invalid registered email address or passcode. Please check hints below.');
+      setSignInError('Invalid registered email address or passcode.');
     }
   };
 
@@ -70,7 +63,6 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
     e.preventDefault();
     setRegError(null);
 
-    // Basic password matching
     if (!regName.trim() || !regEmail.trim() || !regPasscode.trim()) {
       setRegError('All fields are requested to configure a personalized vault.');
       return;
@@ -92,15 +84,11 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
       coFounderName: 'Roshan kumar sahu'
     };
 
-    // Store custom passcode in updated profile
     (newProfile as any).passcode = regPasscode;
-
     onRegister(newProfile);
   };
 
-  // Skip Login with Demo / Sandbox instant bypass
   const handleSandboxBypass = () => {
-    // Fill correct profile and login as guest
     onLoginSuccess({
       ...userProfile,
       name: userProfile.name || 'Roshan Pari',
@@ -112,9 +100,9 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
     <div className="relative min-h-screen bg-gradient-to-tr from-[#FFF7ED] via-[#FCE7F3]/70 to-[#EADFFF]/50 text-slate-800 font-sans antialiased flex flex-col justify-center items-center p-4 overflow-hidden selection:bg-rose-100 selection:text-rose-900">
       
       {/* Dynamic Ambient Blur Background elements */}
-      <div className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full bg-[#EADFFF]/50 blur-3xl animate-float pointer-events-none z-0" />
-      <div className="absolute top-[40%] right-[3%] w-[380px] h-[380px] rounded-full bg-[#3BA7FF]/15 blur-3xl animate-float-delayed pointer-events-none z-0" />
-      <div className="absolute bottom-[10%] left-[20%] w-[320px] h-[320px] rounded-full bg-[#FF4D8D]/10 blur-3xl animate-float pointer-events-none z-0" />
+      <div className="absolute top-[10%] left-[5%] w-72 h-72 rounded-full bg-[#EADFFF]/50 blur-3xl pointer-events-none z-0" />
+      <div className="absolute top-[40%] right-[3%] w-[380px] h-[380px] rounded-full bg-[#3BA7FF]/15 blur-3xl pointer-events-none z-0" />
+      <div className="absolute bottom-[10%] left-[20%] w-[320px] h-[320px] rounded-full bg-[#FF4D8D]/10 blur-3xl pointer-events-none z-0" />
 
       {/* Main glass card content wrapper */}
       <motion.div 
@@ -125,7 +113,7 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
       >
         {/* Visual Brand Icon */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="w-12 h-12 bg-gradient-to-tr from-rose-450 to-pink-500 rounded-2xl flex items-center justify-center shadow-glow animate-float">
+          <div className="w-12 h-12 bg-gradient-to-tr from-rose-450 to-pink-500 rounded-2xl flex items-center justify-center shadow-glow">
             <Cake className="w-6 h-6 text-white" />
           </div>
           <div className="space-y-0.5">
@@ -194,7 +182,7 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
                   id="signin-email"
                   type="email"
                   required
-                  placeholder="e.g. roshanpari1608@gmail.com"
+                  placeholder="Enter your email"
                   value={signInEmail}
                   onChange={(e) => setSignInEmail(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-slate-50/60 focus:bg-white border border-slate-150 rounded-2xl focus:border-rose-450 focus:ring-2 focus:ring-rose-200/50 focus:outline-hidden shadow-soft-inset transition-all text-sm font-semibold text-slate-800"
@@ -204,23 +192,9 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
 
             {/* Secret Passcode PIN field */}
             <div className="space-y-1.5 text-left">
-              <div className="flex justify-between items-center pr-0.5">
-                <label htmlFor="signin-passcode" className="block text-xs font-extrabold uppercase tracking-widest text-slate-450 font-mono pl-0.5">
-                  🔑 Secret Passcode
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Pre-fill default PIN for high usability
-                    setSignInPasscode('1608');
-                    setSignInEmail('roshanpari1608@gmail.com');
-                  }}
-                  className="text-[10px] text-rose-500 hover:text-rose-600 font-bold uppercase tracking-wider"
-                  title="Prefill preset PIN sandbox parameters"
-                >
-                  Use Pre-set PIN
-                </button>
-              </div>
+              <label htmlFor="signin-passcode" className="block text-xs font-extrabold uppercase tracking-widest text-slate-450 font-mono pl-0.5">
+                🔑 Secret Passcode
+              </label>
               
               <div className="relative">
                 <Lock className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
@@ -253,17 +227,6 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
               <span>Unlock Ceremony Vault</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-
-            {/* Hint alert element */}
-            <div className="p-3.5 bg-amber-50/40 border border-amber-100/30 rounded-2xl text-[11px] text-left text-amber-700/90 leading-relaxed space-y-1">
-              <span className="font-extrabold flex items-center gap-1 uppercase tracking-wider text-[10px] text-amber-800 font-mono">
-                <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-                <span>Quick Access Parameters</span>
-              </span>
-              <p>
-                Your Ceremony vault is locked under default parameter <b>roshanpari1608@gmail.com</b> and passcode PIN <b>1608</b>. Use "Use Pre-set PIN" or bypass using the live sandbox button below.
-              </p>
-            </div>
           </form>
         ) : (
           <form onSubmit={handleRegister} className="space-y-4">
@@ -338,6 +301,7 @@ export default function LoginScreen({ userProfile, onLoginSuccess, onRegister }:
               </div>
             </div>
 
+            {/* Confirm Passcode */}
             <div className="space-y-1.5 text-left">
               <label htmlFor="reg-confirm" className="block text-xs font-extrabold uppercase tracking-widest text-slate-455 font-mono pl-0.5">
                 🔒 Confirm Passcode PIN
